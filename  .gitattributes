@@ -1,0 +1,10 @@
+# .gitattributes 文件内容
+# 所有文件默认使用 LF，提交时转换，检出时不转换（跨平台友好）
+* text=auto eol=lf
+
+# 针对特定文件类型细化（可选）
+*.java text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
