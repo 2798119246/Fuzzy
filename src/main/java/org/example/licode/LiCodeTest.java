@@ -1,20 +1,14 @@
 package org.example.licode;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        int[] nums1 = {1, 2, 3, 0, 0, 0};
-        int m = 3;
-        int[] nums2 = {2, 5, 6};
-        int n = 3;
-        System.out.println(Arrays.toString(nums1));
-        merge2(nums1, m, nums2, n);
-        System.out.println(Arrays.toString(nums1));
+        int[] nums1 = {-3, -1, 0, 0, 0, 3, 3};
+
+        int ds = removeDuplicates2(nums1);
+        System.out.println(ds);
     }
 
     /**
@@ -99,6 +93,47 @@ public class LiCodeTest {
         for (int i = 0; i != m + n; ++i) {
             nums1[i] = sorted[i];
         }
+    }
+
+    /**
+     * 移除重复元素，利用java的Set集合元素不重复的特性，直接跳过判断重复元素的过程，其中HashSet不会保留插入顺序，也不会自动排序，而
+     * LinkedHashSet 可以保持插入顺序，TreeSet不保留插入顺序但是可以自动排序
+     *
+     * @param nums
+     * @return
+     */
+    public static int removeDuplicates(int[] nums) {
+        Set<Integer> set = new LinkedHashSet<>();
+        for (int num : nums) {
+            set.add(num);
+        }
+        int p = 0;
+        for (Integer value : set) {
+            nums[p++] = value;
+        }
+        return set.size();
+    }
+
+    /**
+     * 经典双指针
+     *
+     * @param nums
+     * @return
+     */
+    public static int removeDuplicates2(int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int fast = 1, slow = 1;
+        while (fast < n) {
+            if (nums[fast] != nums[fast - 1]) {
+                nums[slow] = nums[fast];
+                ++slow;
+            }
+            ++fast;
+        }
+        return slow;
     }
 
 }
