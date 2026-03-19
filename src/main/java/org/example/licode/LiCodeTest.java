@@ -136,4 +136,24 @@ public class LiCodeTest {
         return slow;
     }
 
+    /**
+     * 移除元素，也可以用新建数组的方式，一次遍历拿出不同元素，二次遍历把不同元素放到数组首位
+     * @param nums
+     * @param val
+     * @return
+     */
+    public int removeElement(int[] nums, int val) {
+        int rt = 0;
+        int n = nums.length;
+        if (n == 0) {
+            return rt;
+        }
+        for (int num : nums) {
+            if (num != val) {
+                nums[rt++] = num;
+            }
+        }
+        return rt;
+    }
+
 }
