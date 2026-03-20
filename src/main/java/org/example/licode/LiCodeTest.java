@@ -138,6 +138,7 @@ public class LiCodeTest {
 
     /**
      * 移除元素，也可以用新建数组的方式，一次遍历拿出不同元素，二次遍历把不同元素放到数组首位
+     *
      * @param nums
      * @param val
      * @return
@@ -156,4 +157,29 @@ public class LiCodeTest {
         return rt;
     }
 
+    /**
+     * 多数元素，找出数组元素中的众数（出现次数大于n/2），有三种常见解法：
+     * 第一种就是用hash表存出现次数然后找最大的
+     * 第二种是利用数学规律，当他出现次数大于 n/2时，在有序数组中，它一定是数组的第n/2个元素也就是nums[n/2]
+     * 第三种就是摩尔投票，这是因为题目保证了众数出现次数大于n/2，那么相当于竞选中一个人的票数会大于其他所有参与者的总票数，
+     * 所以把这些不同参选者的票数相抵消，当选者的票数一定至少剩一张。
+     *
+     * @param nums
+     * @return
+     */
+    public static int majorityElement(int[] nums) {
+        int rt = 0;
+        int counts = 0;
+        for (int num : nums) {
+            if (counts == 0) {
+                rt = num;
+            }
+            if (rt == num) {
+                counts++;
+            } else {
+                counts--;
+            }
+        }
+        return rt;
+    }
 }
