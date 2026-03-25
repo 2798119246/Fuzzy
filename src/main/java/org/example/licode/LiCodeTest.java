@@ -5,10 +5,9 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        int[] nums1 = {-3, -1, 0, 0, 0, 3, 3};
+        int[] nums1 = {1, 7, 5, 2, 1, 9, 2};
 
-        int ds = removeDuplicates2(nums1);
-        System.out.println(ds);
+        System.out.println(maxProfit(nums1));
     }
 
     /**
@@ -181,5 +180,25 @@ public class LiCodeTest {
             }
         }
         return rt;
+    }
+
+    /***
+     * 买卖股票的最佳时机,只需要记录一个历史最低价格，然后去找后续的最高价卖出即可。动态规划的思想，只记录历史持股的最低价和今天卖出的最高价，
+     * 每天只判断是不是最低价和利润是不是最高。
+     * 1. 记住历史最便宜的价格（最优状态）
+     * 2. 每天算一下今天卖能不能赚更多（状态转移）
+     * @param prices
+     * @return
+     */
+    public static int maxProfit(int[] prices) {
+        int res = 0, minPoint = Integer.MAX_VALUE;
+        for (int price : prices) {
+            if (price < minPoint) {
+                minPoint = price;
+            } else if (price - minPoint > res) {
+                res = price - minPoint;
+            }
+        }
+        return res;
     }
 }
