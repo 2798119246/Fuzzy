@@ -7,7 +7,7 @@ public class LiCodeTest {
     public static void main(String[] args) {
         int[] nums1 = {1, 7, 5, 2, 1, 9, 2};
 
-        System.out.println(maxProfit(nums1));
+        System.out.println(romanToInt("MCMXCIV"));
     }
 
     /**
@@ -200,5 +200,39 @@ public class LiCodeTest {
             }
         }
         return res;
+    }
+
+    /**
+     * 罗马数字转整数, 这个主要在于要理解罗马数字的组成，罗马数字其实是各个字符所代表的数字之和，唯一要单独考虑的就是，常规情况下，罗马数字大的数字都在前，
+     * 但是一些特殊情况，是小的数字在前，这种情况就不能加，而是减，
+     * 譬如
+     * III = 1+1+1
+     * XV = 10 +5
+     * IX= -1 + 10 =9
+     *
+     * @param s
+     * @return
+     */
+    public static int romanToInt(String s) {
+        char[] romanArr = s.toCharArray();
+        int res = 0, n = romanArr.length;
+        Map<Character, Integer> intMap = new HashMap<>();
+        intMap.put('I', 1);
+        intMap.put('V', 5);
+        intMap.put('X', 10);
+        intMap.put('L', 50);
+        intMap.put('C', 100);
+        intMap.put('D', 500);
+        intMap.put('M', 1000);
+        for (int i = 0; i < n; i++) {
+            if (i + 1 < n && intMap.get(romanArr[i]) < intMap.get(romanArr[i + 1])) {
+                res += intMap.get(romanArr[i + 1]) - intMap.get(romanArr[i]);
+                i++;
+            } else {
+                res += intMap.get(romanArr[i]);
+            }
+        }
+        return res;
+
     }
 }
