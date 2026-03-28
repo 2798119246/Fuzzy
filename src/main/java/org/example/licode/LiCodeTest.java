@@ -5,9 +5,8 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        int[] nums1 = {1, 7, 5, 2, 1, 9, 2};
-
-        System.out.println(romanToInt("MCMXCIV"));
+     String[] strings ={"ab","a"};
+        isPalindrome("AD : GHbbbb .. Kl");
     }
 
     /**
@@ -234,5 +233,166 @@ public class LiCodeTest {
         }
         return res;
 
+    }
+
+    /**
+     * 最后一个单词的长度,两个解法
+     * 一是直接用split api，然后看最后一个字符串的长度，split api会把最末尾的空格消除掉
+     * 二是 倒序遍历，从后往前，先排除空格，然后遍历统计最后一个字符串的长度，由于charAt() api的存在，都无需把字符串转换为字符数组
+     * @param s
+     * @return
+     */
+    public static  int lengthOfLastWord(String s) {
+//        String[] rt = s.split(" ");
+//        return rt[rt.length - 1].length();
+
+            int p = s.length() - 1;
+            while (p >= 0 && s.charAt(p) == ' ') {
+                p--;
+            }
+            int res = 0;
+            while (p >= 0 && s.charAt(p) != ' ') {
+                p--;
+                res++;
+            }
+            return res;
+    }
+
+    /**
+     *  最长公共前缀
+     *  1. 横向扫描，直接套两个循环
+     * @param strs
+     * @return
+     */
+    public static String longestCommonPrefix(String[] strs) {
+        // 横向比较的解法
+//        String preFix = strs[0];
+//        for (int i = 1; i < strs.length; i++) {
+//            int n = Math.min(strs[i].length(), preFix.length());
+//            String s = "";
+//            int p =0;
+//            while (p < n) {
+//                if (preFix.charAt(p) == (strs[i].charAt(p))) {
+//                    s += preFix.charAt(p);
+//                    p++;
+//                } else {
+//                    break;
+//                }
+//            }
+//            preFix = s;
+//            if(preFix.isEmpty())break;
+//        }
+//        return preFix;
+//        纵向比较的写法
+        if (strs == null || strs.length == 0) return "";
+        // 只遍历第一个字符串的字符（纵向按位置检查）
+        for (int i = 0; i < strs[0].length(); i++) {
+            char c = strs[0].charAt(i);
+            // 遍历所有字符串，对比当前位置字符
+            for (int j = 1; j < strs.length; j++) {
+                // 超出长度 或 字符不相等，直接截断
+                if (i == strs[j].length() || strs[j].charAt(i) != c) {
+                    return strs[0].substring(0, i);
+                }
+            }
+        }
+        return strs[0];
+
+    }
+
+    /**
+     * 找出字符串中第一个匹配项的下标 暴力解法，双指针
+     * @param haystack
+     * @param needle
+     * @return
+     */
+    public static int  strStr(String haystack, String needle) {
+        // 双指针
+        int p1 = 0, n = haystack.length(), m = needle.length();
+        // needle大于haystack则一定不匹配
+        if (m > n) {
+            return -1;
+        }
+        while (p1 < n) {
+            if (p1 + m > n) {
+                return -1;
+            }
+            int mid = p1, p2 = 0, count = 0;
+            while (p2 < m) {
+                if (haystack.charAt(mid++) != needle.charAt(p2++)) {
+                    count++;
+                    break;
+                }
+            }
+            if (count == 0) {
+                return p1;
+            }
+            p1++;
+        }
+        return -1;
+    }
+
+    /**
+     * 找出字符串中第一个匹配项的下标 ，KMP算法，构建next数组
+     *
+     * @return
+     */
+    public static int strStr2(String haystack, String needle) {
+        int n = haystack.length(), m = needle.length();
+        if (m == 0) {
+            return 0;
+        }
+        int[] pi = new int[m];
+        for (int i = 1, j = 0; i < m; i++) {
+            while (j > 0 && needle.charAt(i) != needle.charAt(j)) {
+                j = pi[j - 1];
+            }
+            if (needle.charAt(i) == needle.charAt(j)) {
+                j++;
+            }
+            pi[i] = j;
+        }
+        for (int i = 0, j = 0; i < n; i++) {
+            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
+                j = pi[j - 1];
+            }
+            if (haystack.charAt(i) == needle.charAt(j)) {
+                j++;
+            }
+            if (j == m) {
+                return i - m + 1;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 判断是否是回文数，双指针，一个从头一个从尾，
+     * @param s
+     * @return
+     */
+    public static boolean isPalindrome(String s) {
+        if (s.isEmpty()) {
+            return true;
+        }
+        int n = s.length();
+        s = s.toLowerCase();
+        int left = 0, right = n - 1;
+        while (left < right) {
+            while (left < right && !Character.isLetterOrDigit(s.charAt(left))) {
+                ++left;
+            }
+            while (left < right && !Character.isLetterOrDigit(s.charAt(right))) {
+                --right;
+            }
+            if (left < right) {
+                if (s.charAt(left) != s.charAt(right)) {
+                    return false;
+                }
+                left++;
+                right--;
+            }
+        }
+        return true;
     }
 }
