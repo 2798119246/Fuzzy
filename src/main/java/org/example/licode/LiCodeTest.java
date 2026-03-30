@@ -5,8 +5,8 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-     String[] strings ={"ab","a"};
-        isPalindrome("AD : GHbbbb .. Kl");
+        String[] strings = {"ab", "a"};
+        isSubsequence2("abc", "ahbgdc");
     }
 
     /**
@@ -239,28 +239,30 @@ public class LiCodeTest {
      * 最后一个单词的长度,两个解法
      * 一是直接用split api，然后看最后一个字符串的长度，split api会把最末尾的空格消除掉
      * 二是 倒序遍历，从后往前，先排除空格，然后遍历统计最后一个字符串的长度，由于charAt() api的存在，都无需把字符串转换为字符数组
+     *
      * @param s
      * @return
      */
-    public static  int lengthOfLastWord(String s) {
+    public static int lengthOfLastWord(String s) {
 //        String[] rt = s.split(" ");
 //        return rt[rt.length - 1].length();
 
-            int p = s.length() - 1;
-            while (p >= 0 && s.charAt(p) == ' ') {
-                p--;
-            }
-            int res = 0;
-            while (p >= 0 && s.charAt(p) != ' ') {
-                p--;
-                res++;
-            }
-            return res;
+        int p = s.length() - 1;
+        while (p >= 0 && s.charAt(p) == ' ') {
+            p--;
+        }
+        int res = 0;
+        while (p >= 0 && s.charAt(p) != ' ') {
+            p--;
+            res++;
+        }
+        return res;
     }
 
     /**
-     *  最长公共前缀
-     *  1. 横向扫描，直接套两个循环
+     * 最长公共前缀
+     * 1. 横向扫描，直接套两个循环
+     *
      * @param strs
      * @return
      */
@@ -302,11 +304,12 @@ public class LiCodeTest {
 
     /**
      * 找出字符串中第一个匹配项的下标 暴力解法，双指针
+     *
      * @param haystack
      * @param needle
      * @return
      */
-    public static int  strStr(String haystack, String needle) {
+    public static int strStr(String haystack, String needle) {
         // 双指针
         int p1 = 0, n = haystack.length(), m = needle.length();
         // needle大于haystack则一定不匹配
@@ -367,7 +370,8 @@ public class LiCodeTest {
     }
 
     /**
-     * 判断是否是回文数，双指针，一个从头一个从尾，
+     * 判断是否是回文串，双指针，一个从头一个从尾，
+     *
      * @param s
      * @return
      */
@@ -395,4 +399,126 @@ public class LiCodeTest {
         }
         return true;
     }
+
+    /**
+     * 判断s是否是t的子序列， 比如ace是axcde的子序列，但是ace不是casde的子序列。
+     * 双指针，同时后移。
+     *
+     * @param s
+     * @param t
+     * @return
+     */
+    public static boolean isSubsequence(String s, String t) {
+        int p1 = 0, p2 = 0, count = 0;
+        while (p1 < s.length()) {
+            while (p2 < t.length()) {
+                if (s.charAt(p1) == t.charAt(p2)) {
+                    count++;
+                    p2++;
+                    break;
+                }
+                p2++;
+            }
+            p1++;
+        }
+        return count == s.length();
+    }
+
+    /**
+     * 判断s是否是t的子序列， 比如ace是axcde的子序列，但是ace不是casde的子序列。
+     * 动态规划，其实相当于构建一个字典树，记录 字符串t上每个字符在当前横坐标下的位置，
+     * 然后根据这个字典树去查找，
+     *
+     * @param s
+     * @param t
+     * @return
+     */
+    public static boolean isSubsequence2(String s, String t) {
+        int n = s.length(), m = t.length();
+        int[][] dp = new int[m + 1][26];
+        //初始化边界条件，dp[i][j] = m表示t中不存在字符j
+        for (int i = 0; i < 26; i++) {
+            dp[m][i] = -1;
+        }
+        //从后往前递推初始化dp数组
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = 0; j < 26; j++) {
+                if (t.charAt(i) == 'a' + j) {
+                    dp[i][j] = i;
+                } else {
+                    // 不存在则
+                    dp[i][j] = dp[i + 1][j];
+                }
+            }
+        }
+        int index = 0;
+        for (int i = 0; i < n; i++) {
+            //t中没有s[i] 返回false
+            if (dp[index][s.charAt(i) - 'a'] == -1) {
+                return false;
+            }
+            //否则直接跳到t中s[i]第一次出现的位置之后一位
+            index = dp[index][s.charAt(i) - 'a'] + 1;
+        }
+        return true;
+    }
+
+
+    /**
+     * 给你两个字符串：ransomNote 和 magazine ，判断 ransomNote 能不能由 magazine 里面的字符构成。
+     * <p>
+     * 如果可以，返回 true ；否则返回 false 。
+     * <p>
+     * 直接数组存一下字符出现次数然后查询即可
+     *
+     * @param ransomNote
+     * @param magazine
+     * @return
+     */
+    public static boolean canConstruct(String ransomNote, String magazine) {
+        int[] dic = new int[26];
+        int p = 0, q = 0;
+        while (p < magazine.length()) {
+            dic[magazine.charAt(p++) - 'a']++;
+        }
+        while (q < ransomNote.length()) {
+            if (--dic[ransomNote.charAt(q++) - 'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 这种写法不推荐！！！！！！！！！！！！！！！
+     * 给你两个字符串：ransomNote 和 magazine ，判断 ransomNote 能不能由 magazine 里面的字符构成。
+     * <p>
+     * 如果可以，返回 true ；否则返回 false 。
+     * <p>
+     * magazine 中的每个字符只能在 ransomNote 中使用一次。
+     * 别用hashMap，纯纯陷阱，直接用数组存一下字符出现的次数再遍历就行了
+     *
+     * @param ransomNote
+     * @param magazine
+     * @return
+     */
+    public static boolean canConstruct2(String ransomNote, String magazine) {
+        Map<Character, Integer> map = new HashMap<>();
+        for (int i = 0; i < magazine.length(); i++) {
+            if (map.containsKey(magazine.charAt(i))) {
+                map.put(magazine.charAt(i), map.get(magazine.charAt(i)) + 1);
+            } else {
+                map.put(magazine.charAt(i), 1);
+            }
+        }
+        for (int j = 0; j < ransomNote.length(); j++) {
+            if (map.get(ransomNote.charAt(j)) == null || map.get(ransomNote.charAt(j)) < 1) {
+                return false;
+            }
+            map.put(ransomNote.charAt(j), map.get(ransomNote.charAt(j)) - 1);
+        }
+        return true;
+    }
+
+
 }
