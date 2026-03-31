@@ -5,8 +5,7 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        String[] strings = {"ab", "a"};
-        isSubsequence2("abc", "ahbgdc");
+        System.out.println(wordPattern("aaaa", "dog dog dog dog"));
     }
 
     /**
@@ -520,5 +519,59 @@ public class LiCodeTest {
         return true;
     }
 
+
+    /**
+     * 给定两个字符串 s 和 t ，判断它们是否是同构的。 使用哈希表映射来实现
+     *
+     * @param s
+     * @param t
+     * @return
+     */
+    public static boolean isIsomorphic(String s, String t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        Map<Character, Character> s2tMap = new HashMap<>();
+        Map<Character, Character> t2sMap = new HashMap<>();
+        int n = s.length();
+        for (int i = 0; i < n; i++) {
+            char a = s.charAt(i), b = t.charAt(i);
+            if (s2tMap.containsKey(a) && s2tMap.get(a) != b || t2sMap.containsKey(b) && t2sMap.get(b) != a) {
+                return false;
+            }
+            s2tMap.put(a, b);
+            t2sMap.put(b, a);
+        }
+        return true;
+    }
+
+    /**
+     * 给定一种规律 pattern 和一个字符串 s ，判断 s 是否遵循相同的规律。 使用哈希表映射来实现
+     *
+     * @param pattern
+     * @param s
+     * @return
+     */
+    public static boolean wordPattern(String pattern, String s) {
+        String[] strArr = s.split(" ");
+        char[] chars = pattern.toCharArray();
+
+        if (strArr.length != chars.length) {
+            return false;
+        }
+        Map<String, Character> str2charMap = new HashMap<>();
+        Map<Character, String> char2strMap = new HashMap<>();
+        for (int i = 0; i < strArr.length; i++) {
+            char ch = chars[i];
+            String str = strArr[i];
+            if (str2charMap.containsKey(str) && str2charMap.get(str) != ch
+                    || char2strMap.containsKey(ch) && !char2strMap.get(ch).equals(str)) {
+                return false;
+            }
+            str2charMap.put(str, ch);
+            char2strMap.put(ch, str);
+        }
+        return true;
+    }
 
 }
