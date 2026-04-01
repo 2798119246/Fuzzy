@@ -5,7 +5,8 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        System.out.println(wordPattern("aaaa", "dog dog dog dog"));
+        System.out.println(isHappy(19));
+
     }
 
     /**
@@ -573,5 +574,68 @@ public class LiCodeTest {
         }
         return true;
     }
+
+    /**
+     * 有效的字母异位词 , 官方题解居然有直接排序的做法，，，这里选择用hash表，而是不是数组模拟的hash表。因为用数组的
+     * 解法在面对unicode字符时会有问题，所以用hashMap就算是通解。但是比较·慢。 这里主要学会了 getOrDefault()这个方法
+     *
+     * @param s
+     * @param t
+     * @return
+     */
+    public static boolean isAnagram(String s, String t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        Map<Character, Integer> map = new HashMap<>();
+        int p = 0, q = 0;
+        while (p < s.length()) {
+            char ch = s.charAt(p);
+            map.put(ch, map.getOrDefault(ch, 0) + 1);
+            p++;
+        }
+        while (q < t.length()) {
+            char ch = t.charAt(q);
+            map.put(ch, map.getOrDefault(ch, 0) - 1);
+            if (map.get(ch) < 0) {
+                return false;
+            }
+            q++;
+        }
+        return true;
+    }
+
+
+    /**
+     * 编写一个算法来判断一个数 n 是不是快乐数。
+     *
+     * 「快乐数」 定义为：
+     *
+     * 对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。
+     * 然后重复这个过程直到这个数变为 1，也可能是 无限循环 但始终变不到 1。
+     * 如果这个过程 结果为 1，那么这个数就是快乐数。
+     * @param n
+     * @return
+     */
+    public static boolean isHappy(int n) {
+        Set<Integer> set = new HashSet<>();
+        while (n != 1 && !set.contains(n)) {
+            set.add(n);
+            n = getVal(n);
+        }
+        return n == 1;
+
+    }
+
+    private static int getVal(int n) {
+        int sum = 0;
+        while (n > 0) {
+            int d = n % 10;
+            n = n / 10;
+            sum += d * d;
+        }
+        return sum;
+    }
+
 
 }
