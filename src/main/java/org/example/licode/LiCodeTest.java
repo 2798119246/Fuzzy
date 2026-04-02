@@ -5,7 +5,8 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        System.out.println(isHappy(19));
+        int[] nums = {1, 2, 3, 1};
+        System.out.println(containsNearbyDuplicate(nums, 3));
 
     }
 
@@ -608,12 +609,13 @@ public class LiCodeTest {
 
     /**
      * 编写一个算法来判断一个数 n 是不是快乐数。
-     *
+     * <p>
      * 「快乐数」 定义为：
-     *
+     * <p>
      * 对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。
      * 然后重复这个过程直到这个数变为 1，也可能是 无限循环 但始终变不到 1。
      * 如果这个过程 结果为 1，那么这个数就是快乐数。
+     *
      * @param n
      * @return
      */
@@ -637,5 +639,115 @@ public class LiCodeTest {
         return sum;
     }
 
+    /**
+     * 存在重复元素 II ,hash表解法，一边存一边查找，如果存在满足要求的两个元素，则返回，切记这里不能用双指针，因为如果输入过长，会超时
+     *
+     * @param nums
+     * @param k
+     * @return
+     */
+    public static boolean containsNearbyDuplicate(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(nums[i]) && i - map.get(nums[i]) <= k) {
+                return true;
+            }
+            map.put(nums[i], i);
+        }
+        return false;
+    }
+
+    /**
+     * 存在重复元素 II ,滑动窗口
+     *
+     * @param nums
+     * @param k
+     * @return
+     */
+    public static boolean containsNearbyDuplicate2(int[] nums, int k) {
+        // 滑动窗口,
+        Set<Integer> set = new HashSet<>();
+        for (int i = 0; i < nums.length; i++) {
+            // 从0开始遍历，当i> k时，需要将下标为 i-k-1 的元素移除。
+            if (i > k) {
+                set.remove(nums[i - k - 1]);
+            }
+            // 利用set元素不重复的特性，如果添加失败，说明此元素已经存在，即存在 nums[i] = nums[j]
+            if (!set.add(nums[i])) {
+                // 又因为在固定窗口内，所以存在 nums[i] = nums[j] 即满足要求
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 汇总区间
+     * 给定一个  无重复元素 的 有序 整数数组 nums 。
+     * 区间 [a,b] 是从 a 到 b（包含）的所有整数的集合。
+     * 输入：nums = [0,1,2,4,5,7]
+     * 输出：["0->2","4->5","7"]
+     * 解释：区间范围是：
+     * [0,2] --> "0->2"
+     * [4,5] --> "4->5"
+     * [7,7] --> "7"
+     * <p>
+     * 常规解法，遍历一次
+     *
+     * @param nums
+     * @return
+     */
+    public List<String> summaryRanges(int[] nums) {
+        List<String> result = new ArrayList<>();
+        int i = 0, n = nums.length;
+        while (i < n) {
+            // 记录起始位置
+            int low = i;
+            // do- while 会先执行一次 i++;
+            do {
+                // 根据连续条件，开始挪动起始指针
+                i++;
+            } while (i < n && nums[i] == nums[i - 1] + 1);
+            // 最高点必须减一，因为无论循环有没有执行，都会对i进行加一操作
+            int high = i - 1;
+            StringBuffer sb = new StringBuffer(String.valueOf(nums[low]));
+            if (low < high) {
+                sb.append("->");
+                sb.append(nums[high]);
+            }
+            result.add(sb.toString());
+        }
+        return result;
+    }
+
+    /**
+     * 合并区间， 记住思路，先按照左端点进行排序，然后再去一次遍历即可
+     * @param intervals
+     * @return
+     */
+    public static int[][] merge(int[][] intervals) {
+        if (intervals.length == 0) {
+            return new int[0][2];
+        }
+        // 把intervals按照左端点进行排序
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            public int compare(int[] intervals1, int[] intervals2) {
+                return intervals1[0] - intervals2[0];
+            }
+        });
+        List<int[]> merged = new ArrayList<>();
+        for (int[] interval : intervals) {
+            int left = interval[0], right = interval[1], n = merged.size();
+            // 如果新的区间的左端点，都比以合并区间的右端点还要大，那么就说明这个合并区间已经合并完成，需要开始新的合并区间了
+            if (merged.isEmpty() || merged.get(n - 1)[1] < left) {
+                // 新的合并区间
+                merged.add(interval);
+            } else { // 可以合并
+                // 更新右端点最大值，拿当前合并区间的右端点来和遍历到的区间右端点进行比较
+                merged.get(n - 1)[1] = Math.max(merged.get(n - 1)[1], right);
+            }
+        }
+        return merged.toArray(new int[merged.size()][]);
+    }
 
 }
