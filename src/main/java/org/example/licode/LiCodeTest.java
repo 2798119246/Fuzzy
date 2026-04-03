@@ -6,8 +6,15 @@ public class LiCodeTest {
 
     public static void main(String[] args) {
         int[] nums = {1, 2, 3, 1};
-        System.out.println(containsNearbyDuplicate(nums, 3));
-
+        System.out.println(simplifyPath("/.../a/../b/c/../d/./"));
+        MinStack obj = new MinStack();
+        obj.push(-3);
+        obj.push(0);
+        obj.push(-2);
+        int param_2 = obj.getMin();
+        obj.pop();
+        int param_3 = obj.top();
+        int param_4 = obj.getMin();
     }
 
     /**
@@ -722,6 +729,7 @@ public class LiCodeTest {
 
     /**
      * 合并区间， 记住思路，先按照左端点进行排序，然后再去一次遍历即可
+     *
      * @param intervals
      * @return
      */
@@ -748,6 +756,70 @@ public class LiCodeTest {
             }
         }
         return merged.toArray(new int[merged.size()][]);
+    }
+
+    /**
+     * 有效的括号  给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+     *
+     * @param s
+     * @return
+     */
+    public static boolean isValid(String s) {
+        int n = s.length();
+        // 长度必定为偶数
+        if (n % 2 == 1) {
+            return false;
+        }
+
+        // Stack<Character> stack = new Stack<>(); 这种写法其实java官方不推荐，下面这种写法才是罪推荐的栈使用方法。
+        Deque<Character> stack = new LinkedList<Character>();
+        Map<Character, Character> map = new HashMap<>() {
+            {
+                put(']', '[');
+                put('}', '{');
+                put(')', '(');
+            }
+        };
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            // 如果是右括号，则拿栈顶的元素来看能否凑成一对
+            if (map.containsKey(ch)) {
+                if (stack.isEmpty() || stack.peek() != map.get(ch)) {
+                    return false;
+                }
+                stack.pop();
+            } else {
+                // 如果是左括号则放入栈顶等待匹配
+                stack.push(ch);
+            }
+        }
+        // 满足条件的字符串，执行完成后栈必然为空，即所有左括号都在对应位置匹配上了右括号
+        return stack.isEmpty();
+    }
+
+    /**
+     * 简化路径： 给你一组由 / 隔开的字符串（忽略空串和 .），请你从左到右遍历这些字符串，依次删除每个 .. 及其左侧的字符串（模拟返回上一级目录）。
+     *
+     * @param path
+     * @return
+     */
+    public static String simplifyPath(String path) {
+        // 这里用stack，最终组装出来的目录是反的，需要单独，处理，不能直接用String.join();所以用List
+        List<String> stack = new ArrayList<>();
+        for (String s : path.split("/")) {
+            if (s.isEmpty() || s.equals(".")) {
+                // 空字符串和“.”不处理，直接跳过
+                continue;
+            }
+            if (!s.equals("..")) {
+                // 常规目录直接入栈
+                stack.add(s);
+            } else if (!stack.isEmpty()) {
+                // 从头到尾遍历的，遇到.. 把上一个入栈的目录跳过
+                stack.remove(stack.size() - 1);
+            }
+        }
+        return "/" + String.join("/", stack);
     }
 
 }
