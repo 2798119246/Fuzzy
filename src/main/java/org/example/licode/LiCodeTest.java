@@ -5,16 +5,8 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        int[] nums = {1, 2, 3, 1};
-        System.out.println(simplifyPath("/.../a/../b/c/../d/./"));
-        MinStack obj = new MinStack();
-        obj.push(-3);
-        obj.push(0);
-        obj.push(-2);
-        int param_2 = obj.getMin();
-        obj.pop();
-        int param_3 = obj.top();
-        int param_4 = obj.getMin();
+        String[] tokens = {"4", "13", "5", "/", "+"};
+        System.out.println(evalRPN(tokens));
     }
 
     /**
@@ -822,4 +814,144 @@ public class LiCodeTest {
         return "/" + String.join("/", stack);
     }
 
+    /**
+     * 逆波兰表达式求值
+     * 逆波兰表达式严格遵循「从左到右」的运算。计算逆波兰表达式的值时，使用一个栈存储操作数，从左到右遍历逆波兰表达式，进行如下操作：
+     * ① 如果遇到操作数，则将操作数入栈；
+     * ② 如果遇到运算符，则将两个操作数出栈，其中先出栈的是右操作数，后出栈的是左操作数，使用运算符对两个操作数进行运算，将运算得到的新操作数入栈。
+     *
+     * @param tokens
+     * @return
+     */
+    public static int evalRPN(String[] tokens) {
+        Deque<Integer> stack = new LinkedList<>();
+        for (String token : tokens) {
+            switch (token) {
+                case "+": {
+                    int param_1 = stack.pop();
+                    int param_2 = stack.pop();
+                    stack.push(param_2 + param_1);
+                    break;
+                }
+                case "-": {
+                    int param_1 = stack.pop();
+                    int param_2 = stack.pop();
+                    stack.push(param_2 - param_1);
+                    break;
+                }
+                case "*": {
+                    int param_1 = stack.pop();
+                    int param_2 = stack.pop();
+                    stack.push(param_2 * param_1);
+                    break;
+                }
+                case "/": {
+                    int param_1 = stack.pop();
+                    int param_2 = stack.pop();
+                    // 表达式是从左到右计算，但是入栈后是先入后出，所以先出栈的是右操作数，后出栈的是左操作数
+                    // 加减乘除中，除法必须要区分左右
+                    stack.push(param_2 / param_1);
+                    break;
+                }
+                default:
+                    stack.push(Integer.parseInt(token));
+                    break;
+            }
+        }
+        return stack.pop();
+    }
+
+    /**
+     * 给你一个链表的头节点 head ，判断链表中是否有环。 直接用快慢指针最优，也可以直接遍历，用set存，如果遍历时出现了存过的节点，那么set.add
+     * 会返回false
+     *
+     * @param head
+     * @return
+     */
+    public static boolean hasCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return false;
+        }
+        // 快慢指针
+        ListNode slow = head;
+        ListNode fast = head.next;
+        // 如果有环，那么一定会出现慢指针追上快指针的情况
+        while (slow != fast) {
+            if (fast == null || fast.next == null) {
+                return false;
+            }
+            // 慢指针（slow）：每次走 1 步
+            //快指针（fast）：每次走 2 步
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return true;
+    }
+
+    public static class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    /**
+     * 合并两个有序链表， 递归解法，
+     *
+     * @param list1
+     * @param list2
+     * @return
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        if (list1 == null) {
+            return list2;
+        } else if (list2 == null) {
+            return list1;
+        } else if (list1.val < list2.val) {
+            // 只管当下最小的节点是谁，剩下的怎么排交给递归去处理
+            list1.next = mergeTwoLists(list1.next, list2);
+            return list1;
+        } else {
+            list2.next = mergeTwoLists(list1, list2.next);
+            return list2;
+        }
+    }
+
+    /**
+     * 合并两个有序链表，迭代法。
+     *
+     * @param list1
+     * @param list2
+     * @return
+     */
+    public static ListNode mergeTwoLists2(ListNode list1, ListNode list2) {
+        ListNode preHead = new ListNode(-1);
+        // 那个节点小，就把指针指到那个节点上
+        ListNode prev = preHead;
+        // 只要两个都没遍历完就继续，一旦有一个链表遍历完就无需继续了，链表本身是有序的
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                prev.next = list1;
+                // 继续遍历list1下一个节点，
+                list1 = list1.next;
+            } else {
+                prev.next = list2;
+                // 继续遍历list1下一个节点，
+                list2 = list2.next;
+            }
+            // 挪动指针
+            prev = prev.next;
+        }
+        // 没有遍历完的节点，直接接到后面
+        prev.next = list1 == null ? list2 : list1;
+        // 头节点是额外创建的不需要返回
+        return preHead.next;
+    }
 }
