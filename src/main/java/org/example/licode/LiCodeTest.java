@@ -954,4 +954,179 @@ public class LiCodeTest {
         // 头节点是额外创建的不需要返回
         return preHead.next;
     }
+
+    /**
+     * 两数相加
+     * 给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。
+     * 342 + 465 :
+     * 2->4->3
+     * 5->6->4
+     * 由于输入的两个链表都是逆序存储数字的位数的，因此两个链表中同一位置的数字可以直接相加。相加后去处理进位即可
+     *
+     * @param l1
+     * @param l2
+     * @return
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode head = new ListNode(-1);
+        ListNode index = head;
+        // 进位
+        int carry = 0;
+        while (l1 != null || l2 != null) {
+            int param_1 = (l1 == null ? 0 : l1.val);
+            int param_2 = (l2 == null ? 0 : l2.val);
+            int sum = param_1 + param_2 + carry;
+            // 除以10 取余获取当前位置的数
+            index.next = new ListNode(sum % 10);
+            // 除以10 取商获取进位
+            carry = sum / 10;
+            // 挪动指针
+            index = index.next;
+            l1 = l1 == null ? null : l1.next;
+            l2 = l2 == null ? null : l2.next;
+        }
+        // 逆序存储，如果最后剩下个进位，那么得把这个进位单独创立个节点
+        if (carry > 0) {
+            index.next = new ListNode(carry);
+        }
+        return head.next;
+    }
+
+
+    /**
+     * 复制带随机指针的链表 , 递归解法
+     *
+     * @param head
+     * @return
+     */
+    public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+        if (!cacheNode.containsKey(head)) {
+            Node newHead = new Node(head.val);
+            // 把新建的节点存入 hash表
+            cacheNode.put(head, newHead);
+            // 新建节点的 next和random 全部交给递归来处理
+            newHead.next = copyRandomList(head.next);
+            newHead.random = copyRandomList(head.random);
+        }
+        return cacheNode.get(head);
+    }
+
+    /**
+     * 复制带随机指针的链表 , 迭代解法，先给每个节点创建一个复制节点并连接，
+     * 再给每个复制节点，赋值random指针，最后把新建节点从中剥离开来
+     *
+     * @param head
+     * @return
+     */
+    public Node copyRandomList2(Node head) {
+        if (head == null)
+            return null;
+        Node cur = head;
+        // 复制各个节点，构建拼接链表
+        while (cur != null) {
+            Node tmp = new Node(cur.val);
+            tmp.next = cur.next;
+            cur.next = tmp;
+            cur = tmp.next;
+        }
+        cur = head;
+        // 构建新节点的random
+        while (cur != null) {
+            if (cur.random != null) {
+                cur.next.random = cur.random.next;
+            }
+            cur = cur.next.next;
+        }
+        // 把cur挪动到新建节点的头部
+        cur = head.next;
+        // pre处于原链表的头部 ，res保存新链表的头部用于返回
+        Node pre = head, res = head.next;
+        while (cur.next != null) {
+            // 挪动pre跳过新建节点
+            pre.next = pre.next.next;
+            // 挪动cur跳过原有节点
+            cur.next = cur.next.next;
+            // 统一后移，进行第二次挪动
+            pre = pre.next;
+            cur = cur.next;
+        }
+        // 单独处理原链表的尾节点
+        pre.next = null;
+        return res;
+    }
+
+    public static class Node {
+        int val;
+        Node next;
+        Node random;
+
+        public Node(int val) {
+            this.val = val;
+            this.next = null;
+            this.random = null;
+        }
+    }
+
+    // 如果变成了方法的成员变量，那么这个hash表就失去了意义
+    Map<Node, Node> cacheNode = new HashMap<>();
+
+
+    /**
+     * 区间链表反转，一次遍历，非常重要
+     *
+     * @param head
+     * @param left
+     * @param right
+     * @return
+     */
+    public static ListNode reverseBetween(ListNode head, int left, int right) {
+        ListNode dummyNode = new ListNode(-1);
+        dummyNode.next = head;
+        ListNode pre = dummyNode;
+        for (int i = 0; i < left - 1; i++) {
+            //挪动指针到待交换节点前
+            pre = pre.next;
+        }
+        ListNode cur = pre.next;
+        ListNode nt = null;
+        for (int i = 0; i < right - left; i++) {
+            // 先把nt挪动到cur的后面
+            nt = cur.next;
+            // 断开cur和nt的关系，把cur指向nt后面一个节点
+            cur.next = nt.next;
+            // 此时nt依然指向nt.next,把它指向pre.next这个待交换节点
+            nt.next = pre.next;
+            // 直接连接 pre 和 nt
+            pre.next = nt;
+        }
+        return dummyNode.next;
+    }
+
+    /**
+     * 删除链表的倒数第 N 个结点 ，快慢指针
+     * @param head
+     * @param n
+     * @return
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(-1, head);
+        ListNode fast = head;
+        ListNode slow = dummy;
+        // 快指针先挪n步
+        for (int i = 0; i < n; i++) {
+            fast = fast.next;
+        }
+        // 继续直到fast挪到末尾
+        while (fast != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
+        // 此时的慢指针刚好落后fast n步,也就是此时的slow.next就是待移除的节点(因为加了虚拟头节点)
+        slow.next = slow.next.next;
+        return dummy.next;
+    }
+
 }
