@@ -5,8 +5,18 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        String[] tokens = {"4", "13", "5", "/", "+"};
-        System.out.println(evalRPN(tokens));
+        ListNode head = new ListNode(1);
+        ListNode two = new ListNode(4);
+        head.next = two;
+        ListNode three = new ListNode(3);
+        two.next = three;
+        ListNode four = new ListNode(2);
+        three.next = four;
+        ListNode five = new ListNode(5, null);
+        four.next = five;
+        ListNode six = new ListNode(2, null);
+        five.next = six;
+        System.out.println(partition(head, 3));
     }
 
     /**
@@ -1107,6 +1117,7 @@ public class LiCodeTest {
 
     /**
      * 删除链表的倒数第 N 个结点 ，快慢指针
+     *
      * @param head
      * @param n
      * @return
@@ -1129,4 +1140,95 @@ public class LiCodeTest {
         return dummy.next;
     }
 
+    /**
+     * 删除排序链表中的重复元素 II
+     *
+     * @param head
+     * @return
+     */
+    public static ListNode deleteDuplicates(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+        ListNode dummyNode = new ListNode(-1, head);
+        ListNode cur = dummyNode;
+        while (cur.next != null && cur.next.next != null) {
+            if (cur.next.val == cur.next.next.val) {
+                // 记录下一个节点的值
+                int x = cur.next.val;
+                while (cur.next != null && cur.next.val == x) {
+                    // 值相同就往后继续挪
+                    cur.next = cur.next.next;
+                }
+            } else {
+                cur = cur.next;
+            }
+
+        }
+        return dummyNode.next;
+    }
+
+    /**
+     * 旋转链表 闭合为环解法，求链表长度，然后把他连接成环  计算出最后一个节点（即原链表的第 (n−1)−(k mod n) 个节点
+     * 其实就是把后 k个节点，截取下来，连到头节点而已  比如 长度 5，k = 3，就把后三个节点截取下来连接， 长度 5 k等于 6实际上
+     * 当挪动5次时已经回到了起始位置，只需要把后一个节点截取到头部即可，而长度 5 k = 6，7，8，9，10，都是这样，体现出来公式就是
+     * k % n , 而 n -k%n 就是从头遍历到新尾部节点需要的步数。比如 n -k%n = 3 ,12345 就要走3步 ，4就是新的头节点，这就是个找规律的题
+     *
+     * @param head
+     * @param k
+     * @return
+     */
+    public static ListNode rotateRight(ListNode head, int k) {
+        if (k == 0 || head == null || head.next == null) {
+            return head;
+        }
+        int n = 1;
+        ListNode index = head;
+        while (index.next != null) {
+            index = index.next;
+            n++;
+        }
+        int add = n - k % n;
+        if (add == n) {
+            return head;
+        }
+        // 连成环
+        index.next = head;
+        // 从最后一个节点开始在环里找需要断开的位置
+        while (add-- > 0) {
+            index = index.next;
+        }
+        // 因为index是再尾部节点连接上头节点后 再继续遍历的，所以遍历add次后，index.next 才是新的头节点
+        ListNode result = index.next;
+        // 把 当前index.next指向null 断开环，这特么有点抽象啊
+        index.next = null;
+        return result;
+    }
+
+    /**
+     * 分隔链表, 创建一个大数链表和小数链表，然后把小数尾和大数头连接即可。
+     * @param head
+     * @param x
+     * @return
+     */
+    public static ListNode partition(ListNode head, int x) {
+        ListNode small = new ListNode(-1);
+        ListNode large = new ListNode(-1);
+        ListNode pre = head;
+        // 记录头
+        ListNode smallHead = small;
+        ListNode largeHead = large;
+        while (pre != null) {
+            if (pre.val < x) {
+                small.next = new ListNode(pre.val);
+                small = small.next;
+            } else {
+                large.next = new ListNode(pre.val);
+                large =  large.next;
+            }
+            pre = pre.next;
+        }
+        small.next = largeHead.next;
+        return smallHead.next;
+    }
 }
