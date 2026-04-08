@@ -1207,6 +1207,7 @@ public class LiCodeTest {
 
     /**
      * 分隔链表, 创建一个大数链表和小数链表，然后把小数尾和大数头连接即可。
+     *
      * @param head
      * @param x
      * @return
@@ -1224,11 +1225,232 @@ public class LiCodeTest {
                 small = small.next;
             } else {
                 large.next = new ListNode(pre.val);
-                large =  large.next;
+                large = large.next;
             }
             pre = pre.next;
         }
         small.next = largeHead.next;
         return smallHead.next;
     }
+
+
+    /**
+     * 二叉树
+     */
+    public static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode() {
+        }
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    /**
+     * 深度优先遍历 DFS 递归解法
+     *
+     * @param root
+     * @return
+     */
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        } else {
+            int leftHeight = maxDepth(root.left);
+            int rightHeight = maxDepth(root.right);
+            // 必须加1
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+
+    /**
+     * 广度优先遍历 BFS 使用队列实现
+     *
+     * @param root
+     * @return
+     */
+    public int maxDepth2(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        int ans = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            while (size > 0) {
+                // 遍历当前每一层所有节点，并把他们的根节点存入队列
+                // 利用队列先进先出加上size的控制，每次刚好能把每层的节点全部出队
+                TreeNode node = queue.poll();
+                if (node != null && node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node != null && node.right != null) {
+                    queue.offer(node.right);
+                }
+                size--;
+            }
+            // 每遍历一层就加一
+            ans++;
+        }
+        return ans;
+
+    }
+
+
+    /**
+     * 相同的树，判断两棵树是否相同 ,广度优先遍历
+     *
+     * @param p
+     * @param q
+     * @return
+     */
+    public static boolean isSameTree(TreeNode p, TreeNode q) {
+        Queue<TreeNode> queue1 = new LinkedList<>();
+        Queue<TreeNode> queue2 = new LinkedList<>();
+        queue1.offer(p);
+        queue2.offer(q);
+        while (!queue1.isEmpty() || !queue2.isEmpty()) {
+            TreeNode node1 = queue1.poll();
+            TreeNode node2 = queue2.poll();
+
+            if (node1 == null ^ node2 == null)
+                return false;
+            if (node1 == null || node2 == null)
+                continue;
+            if (node1.val != node2.val)
+                return false;
+
+            queue1.offer(node1.left);
+            queue1.offer(node1.right);
+            queue2.offer(node2.left);
+            queue2.offer(node2.right);
+        }
+        return true;
+    }
+
+    /**
+     * 相同的树，深度优先遍历 递归
+     *
+     * @param p
+     * @param q
+     * @return
+     */
+    public static boolean isSameTree2(TreeNode p, TreeNode q) {
+        if (p == null && q == null) {
+            return true;
+        } else if (p == null || q == null) {
+            return false;
+        } else if (p.val != q.val) {
+            return false;
+        } else {
+            return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+        }
+    }
+
+    /**
+     * 翻转二叉树， 递归解法，
+     *
+     * @param root
+     * @return
+     */
+    public static TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+        // 递归翻转左边
+        TreeNode leftNode = invertTree(root.left);
+        // 递归翻转右边
+        TreeNode rightNode = invertTree(root.right);
+        root.left = rightNode;
+        root.right = leftNode;
+        return root;
+    }
+
+    /**
+     * 判断对称二叉树， 递归 核心是判断根节点值是否相同以及两个根节点之间的子节点的是否左右对称，并不是判断根的两个子节点值是否相同
+     *
+     * @param root
+     * @return
+     */
+    public static boolean isSymmetric(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return check(root.left, root.right);
+    }
+
+    public static boolean check(TreeNode leftRoot, TreeNode rightRoot) {
+        if (leftRoot == null && rightRoot == null) {
+            return true;
+        }
+        if (leftRoot == null ^ rightRoot == null) {
+            return false;
+        }
+        return leftRoot.val == rightRoot.val
+                && check(leftRoot.left, rightRoot.right) && check(leftRoot.right, rightRoot.left);
+    }
+
+    /**
+     * 判断对称二叉树， 迭代法
+     *
+     * @param root
+     * @return
+     */
+    public static boolean isSymmetric2(TreeNode root) {
+        return check(root, root);
+    }
+
+    public static boolean check2(TreeNode leftRoot, TreeNode rightRoot) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(leftRoot);
+        queue.offer(rightRoot);
+        while (!queue.isEmpty()) {
+            // 一对一对的取出，
+            leftRoot = queue.poll();
+            rightRoot = queue.poll();
+            if (leftRoot == null ^ rightRoot == null) {
+                return false;
+            }
+            if (leftRoot == null && rightRoot == null) {
+                continue;
+            }
+            if (leftRoot.val != rightRoot.val) {
+                return false;
+            }
+            // 一对一对的存入，相邻的一定要满足对称要求，即值相等
+            queue.offer(leftRoot.left);
+            queue.offer(rightRoot.right);
+
+            queue.offer(leftRoot.right);
+            queue.offer(rightRoot.left);
+        }
+        return true;
+    }
+
+    // 前序遍历 ：根 → 左 → 右
+    // 中序遍历 ：左 → 根 → 右
+    // 后序遍历 ：左 → 右 → 根
+    // 例：
+    //         1
+    //       / \
+    //      2   3
+    //     / \   \
+    //    4  5    6
+    // 前序 1 2 3 4 5 6
+    // 中序 4 2 5 1 3 6
+    // 后序 4 5 2 6 3 1
+    // 根在哪儿，就是什么序
+
+
 }
