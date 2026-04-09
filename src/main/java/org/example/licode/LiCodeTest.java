@@ -1452,5 +1452,372 @@ public class LiCodeTest {
     // 后序 4 5 2 6 3 1
     // 根在哪儿，就是什么序
 
+    /**
+     * 中序遍历，递归法
+     *
+     * @param root
+     * @return
+     */
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        return inOrder(root, list);
 
+    }
+
+    public List<Integer> inOrder(TreeNode root, List<Integer> list) {
+        if (root == null) {
+            return list;
+        }
+        inOrder(root.left, list);
+        list.add(root.val);
+        inOrder(root.right, list);
+        return list;
+    }
+
+    /**
+     * 中序遍历，迭代法
+     *
+     * @param root
+     * @return
+     */
+    public List<Integer> inorderTraversal2(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> stack = new LinkedList<>();
+        while (root != null || !stack.isEmpty()) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
+            root = stack.pop();
+            result.add(root.val);
+            root = root.right;
+        }
+        return result;
+    }
+
+
+    /**
+     * 利用前序和中序来构建树， 递归，一定要熟练掌握，
+     *
+     * @param preorder
+     * @param inorder
+     * @return
+     */
+    public static TreeNode buildTree(int[] preorder, int[] inorder) {
+        Map<Integer, Integer> cacheMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            // 记录节点在中序遍历中的位置
+            cacheMap.put(inorder[i], i);
+        }
+        // 递归构建树，每一次递归都相当于构建一个根节点
+        return build(preorder, 0, preorder.length - 1,
+                inorder, 0, inorder.length - 1,
+                cacheMap);
+    }
+
+    public static TreeNode build(int[] preorder, int preStart, int preEnd,
+                                 int[] inorder, int inStart, int inEnd, Map<Integer, Integer> cacheMap) {
+        if (preStart > preEnd) {
+            // 终止条件
+            return null;
+        }
+        // 前序遍历的第一个点就是根节点
+        int rootVal = preorder[preStart];
+        TreeNode root = new TreeNode(rootVal);
+        // 找到根节点在中序遍历的位置
+        int mid = cacheMap.get(rootVal);
+        // 计算左子树的长度
+        int leftTreeLen = mid - inStart;
+        root.left = build(preorder, preStart + 1, preStart + leftTreeLen,
+                inorder, inStart, mid - 1, cacheMap);
+
+        root.right = build(preorder, preStart + 1 + leftTreeLen, preEnd,
+                inorder, mid + 1, inEnd, cacheMap);
+
+        return root;
+    }
+
+    /**
+     * 利用后序，中序来构建二叉树，递归解法，思路和前序中序一样，就是关键点的值需要画图，不然容易搞错
+     *
+     * @param inorder
+     * @param postorder
+     * @return
+     */
+    public TreeNode buildTree2(int[] inorder, int[] postorder) {
+
+        Map<Integer, Integer> cacheMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            cacheMap.put(inorder[i], i);
+        }
+
+        return build2(inorder, 0, inorder.length - 1,
+                postorder, postorder.length - 1, 0,
+                cacheMap);
+    }
+
+    private TreeNode build2(int[] inorder, int inStart, int inEnd, int[] postorder,
+                            int posTail, int posHead, Map<Integer, Integer> cacheMap) {
+        if (inStart > inEnd) {
+            return null;
+        }
+        // 后序遍历的根节点始终处于末尾
+        int rootVal = postorder[posTail];
+        TreeNode root = new TreeNode(rootVal);
+        int mid = cacheMap.get(rootVal);
+        int rightTreeLen = inEnd - mid;
+
+        root.left = build2(inorder, inStart, mid - 1,
+                postorder, posTail - 1 - rightTreeLen, posHead,
+                cacheMap);
+
+        root.right = build2(inorder, mid + 1, inEnd,
+                postorder, posTail - 1, posTail - rightTreeLen,
+                cacheMap);
+
+        return root;
+    }
+
+    public static class Node1 {
+        public int val;
+        public Node1 left;
+        public Node1 right;
+        public Node1 next;
+
+        public Node1() {
+        }
+
+        public Node1(int _val) {
+            val = _val;
+        }
+
+        public Node1(int _val, Node1 _left, Node1 _right, Node1 _next) {
+            val = _val;
+            left = _left;
+            right = _right;
+            next = _next;
+        }
+    }
+
+    /**
+     * 填充每个节点的下一个右侧节点指针 II 这个写法不推荐·，但是这个遍历树的·方法要学会，
+     *
+     * @param root
+     * @return
+     */
+    @Deprecated
+    public static Node1 connect1(Node1 root) {
+        if (root == null) {
+            return null;
+        }
+        Queue<Node1> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            Node1 last = null;
+            for (int i = 1; i <= size; i++) {
+                Node1 node = queue.poll();
+                if (node != null && node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node != null && node.right != null) {
+                    queue.offer(node.right);
+                }
+                if (i != 1) {
+                    last.next = node;
+                }
+                last = node;
+            }
+        }
+        return root;
+    }
+
+    /**
+     * 填充每个节点的下一个右侧节点指针 II 推荐的O(1)写法
+     *
+     * @param root
+     * @return
+     */
+    public Node1 connect(Node1 root) {
+        Node1 dummy = new Node1();
+        Node1 cur = root;
+        while (cur != null) {
+            dummy.next = null;
+            Node1 nextNode = dummy;
+            while (cur != null) {
+                if (cur.left != null) {
+                    nextNode.next = cur.left;
+                    nextNode = cur.left;
+                }
+                if (cur.right != null) {
+                    nextNode.next = cur.right;
+                    nextNode = cur.right;
+                }
+                cur = cur.next;
+            }
+            // 此时的dummy.next就是cur.left
+            cur = dummy.next;
+        }
+        return root;
+    }
+
+    /**
+     * 二叉树展开为链表 ，O(1)解法寻找前驱节点
+     * 找前驱 = 找到左子树最后一个节点
+     * 把右子树接在它后面 = 左走完再走右
+     * 整个结构永远保持：根 → 左 → 右
+     * 所以天然就是前序遍历顺序
+     *
+     * @param root
+     */
+    public void flatten(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        TreeNode cur = root;
+        while (cur != null) {
+            if (cur.left != null) {
+                TreeNode next = cur.left;
+                TreeNode predecessor = next;
+                while (predecessor.right != null) {
+                    predecessor = predecessor.right;
+                }
+                predecessor.right = cur.right;
+                cur.left = null;
+                cur.right = next;
+            }
+            cur = cur.right;
+        }
+
+    }
+
+    /**
+     * 路径总和 递归解法
+     *
+     * @param root
+     * @param targetSum
+     * @return
+     */
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if (root == null) {
+            return false;
+        }
+        // 把目标数额减去每个节点的数值，如果出现目标数额等于0，则表示目标存在
+        targetSum -= root.val;
+        if (root.left == null && root.right == null) {
+            return targetSum == 0;
+        }
+        return hasPathSum(root.left, targetSum) || hasPathSum(root.right, targetSum);
+    }
+
+    /**
+     * 求根到节点的数字之和，递归
+     *
+     * @param root
+     * @return
+     */
+    public int sumNumbers(TreeNode root) {
+        return dfs(root, 0);
+    }
+
+    public int dfs(TreeNode root, int prevSum) {
+        if (root == null) {
+            return 0;
+        }
+        int sum = prevSum * 10 + root.val;
+        if (root.left == null && root.right == null) {
+            return sum;
+        } else {
+            return dfs(root.left, sum) + dfs(root.right, sum);
+        }
+    }
+
+    /**
+     * 求根到节点的数字之和，迭代法
+     *
+     * @param root
+     * @return
+     */
+    public int sumNumbers2(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int sum = 0;
+        Queue<TreeNode> nodeQueue = new LinkedList<>();
+        Queue<Integer> numQueue = new LinkedList<>();
+        nodeQueue.offer(root);
+        numQueue.offer(root.val);
+        while (!nodeQueue.isEmpty()) {
+            TreeNode node = nodeQueue.poll();
+            int num = numQueue.poll();
+            TreeNode left = node.left, right = node.right;
+            if (left == null && right == null) {
+                sum += num;
+            } else {
+                if (left != null) {
+                    nodeQueue.offer(left);
+                    numQueue.offer(num * 10 + left.val);
+                }
+                if (right != null) {
+                    nodeQueue.offer(right);
+                    numQueue.offer(num * 10 + right.val);
+                }
+            }
+        }
+        return sum;
+    }
+
+
+    /**
+     * 计算完全二叉树的节点数
+     *
+     * @param root
+     * @return
+     */
+    public int countNodes(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int leftHeight = 0, rightHeight = 0;
+        // 必须从根节点开始计算高度
+        TreeNode leftNode = root, rightNode = root;
+        while (leftNode != null) {
+            leftNode = leftNode.left;
+            leftHeight++;
+        }
+        while (rightNode != null) {
+            rightNode = rightNode.right;
+            rightHeight++;
+        }
+        // 高度相同，说明是满二叉树，直接用公式 2^n -1
+        if (leftHeight == rightHeight) {
+            // 这个写法等价于 2的n次幂
+            return (1 << leftHeight) - 1;
+        }
+
+        return 1 + countNodes(root.left) + countNodes(root.right);
+    }
+
+
+    /**
+     * 二叉树的最近公共祖先 递归解法，其实有这几种情况：
+     * ① p，q 分别在 root 的两侧，那么 root 为最近的公共祖先
+     * ② q 为根节点，p 在 q 的子树中，那么 q 就为最近的公共祖先
+     * ③ p 为根节点，q 在 p 的子树中，那么 p 就为最近的公共祖先
+     *
+     * @param root
+     * @param p
+     * @param q
+     * @return
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        // 以当前节点为根，有没有找到 p 或 q？找到了就返回它。
+        if (root == null || root == p || root == q) return root;
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if (left == null) return right;
+        if (right == null) return left;
+        // 只有最近公共祖先，会在左、右两边同时找到 p 和 q！
+        return root;
+    }
 }
