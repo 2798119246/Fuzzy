@@ -1820,4 +1820,326 @@ public class LiCodeTest {
         // 只有最近公共祖先，会在左、右两边同时找到 p 和 q！
         return root;
     }
+
+    /**
+     * 二叉树的右视图，广度优先遍历
+     *
+     * @param root
+     * @return
+     */
+    public List<Integer> rightSideView(TreeNode root) {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<Integer> result = new ArrayList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            TreeNode rightNode = queue.peek();
+            result.add(rightNode.val);
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (node != null && node.right != null) {
+                    queue.offer(node.right);
+                }
+                if (node != null && node.left != null) {
+                    queue.offer(node.left);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 二叉树的右视图，深度优先遍历，递归，根右左，
+     *
+     * @param root
+     * @return
+     */
+    public List<Integer> rightSideView2(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        // 【根 → 右 → 左】，每一层第一个访问到的节点，就是右视图
+        dfs1(root, 0, result);
+        return result;
+    }
+
+    private void dfs1(TreeNode root, int depth, List<Integer> result) {
+        if (root == null) {
+            return;
+        }
+        if (depth == result.size()) {
+            result.add(root.val);
+        }
+        // 先递归右子树，保证首次遇到的一定是最右边的节点
+        dfs1(root.right, depth + 1, result);
+        dfs1(root.left, depth + 1, result);
+    }
+
+    /**
+     * 二叉树的层平均值，广度优先遍历，
+     *
+     * @param root
+     * @return
+     */
+    public List<Double> averageOfLevels(TreeNode root) {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<Double> result = new ArrayList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            double sum = 0.0;
+            int n = queue.size();
+            for (int i = 0; i < n; i++) {
+                TreeNode node = queue.poll();
+                sum += node.val;
+                if (node.left != null)
+                    queue.offer(node.left);
+                if (node.right != null)
+                    queue.offer(node.right);
+            }
+            result.add(sum / n);
+        }
+        return result;
+    }
+
+    /**
+     * 二叉树的层平均值，深度优先遍历，记住这个list的set方法，以前从来没有用过，
+     *
+     * @param root
+     * @return
+     */
+    public List<Double> averageOfLevels2(TreeNode root) {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+        List<Double> result = new ArrayList<>();
+        // 记录每层节点值之和
+        List<Double> totalSum = new ArrayList<>();
+        // 记录每层节点数
+        List<Integer> levelCount = new ArrayList<>();
+        dfsAve(root, 0, totalSum, levelCount);
+        for (int i = 0; i < totalSum.size(); i++) {
+            result.add(totalSum.get(i) / levelCount.get(i));
+        }
+        return result;
+    }
+
+    /**
+     * 二叉树的层序遍历  标准的bfs解法，一定要掌握
+     */
+    private void dfsAve(TreeNode root, int depth, List<Double> totalSum, List<Integer> levelCount) {
+        if (root == null) {
+            return;
+        }
+        if (depth < levelCount.size()) {
+            totalSum.set(depth, totalSum.get(depth) + root.val);
+            levelCount.set(depth, levelCount.get(depth) + 1);
+        } else {
+            totalSum.add(1.0 * root.val);
+            levelCount.add(1);
+        }
+        dfsAve(root.left, depth + 1, totalSum, levelCount);
+        dfsAve(root.right, depth + 1, totalSum, levelCount);
+    }
+
+    /**
+     * 二叉树的层序遍历  标准的bfs解法，一定要掌握
+     */
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+        //其实就是前序遍历换了个形式输出
+        Deque<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (node != null) {
+                    queue.offer(node.left);
+                    queue.offer(node.right);
+                    list.add(node.val);
+                }
+            }
+            if (list.size() > 0)
+                res.add(list);
+        }
+        return res;
+    }
+
+
+    public List<List<Integer>> levelOrder2(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+
+        if (root == null) {
+            return res;
+        }
+        // 开始递归
+        dfsLd(root, 0, res);
+        return res;
+    }
+
+    private void dfsLd(TreeNode root, int depth, List<List<Integer>> res) {
+        if (root == null) return;
+        // 新一层创建一个空 list
+        if (depth == res.size()) res.add(new ArrayList<>());
+        // 按照、根左右的顺序开始递归处理
+        res.get(depth).add(root.val);
+        dfsLd(root.left, depth + 1, res);
+        dfsLd(root.right, depth + 1, res);
+    }
+
+
+    /**
+     * 二叉树的锯齿形层序遍历
+     *
+     * @param root
+     * @return
+     */
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        if (root == null) {
+            return new ArrayList<>();
+        }
+        Deque<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        boolean flag = false;
+
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (node != null) {
+                    queue.offer(node.left);
+                    queue.offer(node.right);
+                    list.add(node.val);
+                }
+            }
+            if (flag)
+                Collections.reverse(list);
+
+            if (list.size() > 0)
+                res.add(list);
+            flag = !flag;
+        }
+        return res;
+    }
+
+
+    /**
+     * 二叉搜索树的最小绝对差 虽然这里用list传值，但是这只是为了放在一起的时候好写一点，实际做题时，最好是用类的成员变量来替代list，
+     * 并且要记住，java 基本数据类型和他的包装类，在作为方法参数时，都是值传递，不是引用地址传递
+     *
+     * @param root
+     * @return
+     */
+    public int getMinimumDifference(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        list.add(Integer.MAX_VALUE); // res
+        list.add(-1); // prev
+        dfsSerc(root, list);
+        return list.get(0);
+    }
+
+    private void dfsSerc(TreeNode root, List<Integer> list) {
+        if (root == null) {
+            return;
+        }
+        int n = root.val;
+        dfsSerc(root.left, list);
+        if (list.get(1) == -1) {
+            // prev = n
+            list.set(1, n);
+        } else {
+            // res = n-prev
+            list.set(0, Math.min(list.get(0), n - list.get(1)));
+            list.set(1, n);
+        }
+        dfsSerc(root.right, list);
+    }
+
+    /**
+     * 二叉搜索树中第 K 小的元素，也可以用成员变量，记录一下，当找到第k个元素就终止循环，不过似乎没有什么必要了
+     *
+     * @param root
+     * @param k
+     * @return
+     */
+    public int kthSmallest(TreeNode root, int k) {
+        List<Integer> list = new ArrayList<>();
+        dfs(root, list);
+        return list.get(k - 1);
+    }
+
+    private void dfs(TreeNode root, List<Integer> list) {
+        if (root == null)
+            return;
+        dfs(root.left, list);
+        list.add(root.val);
+        dfs(root.right, list);
+    }
+
+
+    /**
+     *   验证二叉搜索树 迭代写法
+     * @param root
+     * @return
+     */
+    public boolean isValidBST(TreeNode root) {
+        Integer prev = null;
+        Deque<TreeNode> stack = new LinkedList<>();
+
+        while (!stack.isEmpty() || root != null) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
+            root = stack.pop();
+            if (prev != null && root.val <= prev)
+                return false;
+
+            prev = root.val;
+            root = root.right;
+        }
+        return true;
+    }
+
+    private Integer prev_bst;
+    private boolean res_bst;
+
+    /**
+     *   验证二叉搜索树 递归写法,
+     * @param root
+     * @return
+     */
+    public boolean isValidBST2(TreeNode root) {
+        prev_bst = null;
+        res_bst = true;
+        dfsBST(root);
+        return res_bst;
+    }
+
+
+    private void dfsBST(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        dfsBST(root.left);
+        if (prev_bst == null) {
+            prev_bst = root.val;
+        } else {
+            res_bst = res_bst && (root.val > prev_bst);
+            prev_bst = root.val;
+        }
+        dfsBST(root.right);
+    }
+
 }
