@@ -16,7 +16,8 @@ public class LiCodeTest {
         four.next = five;
         ListNode six = new ListNode(2, null);
         five.next = six;
-        System.out.println(partition(head, 3));
+
+        System.out.println(lengthOfLongestSubstring("dvdf"));
     }
 
     /**
@@ -2089,14 +2090,14 @@ public class LiCodeTest {
 
 
     /**
-     *   验证二叉搜索树 迭代写法
+     * 验证二叉搜索树 迭代写法
+     *
      * @param root
      * @return
      */
     public boolean isValidBST(TreeNode root) {
         Integer prev = null;
         Deque<TreeNode> stack = new LinkedList<>();
-
         while (!stack.isEmpty() || root != null) {
             while (root != null) {
                 stack.push(root);
@@ -2116,7 +2117,8 @@ public class LiCodeTest {
     private boolean res_bst;
 
     /**
-     *   验证二叉搜索树 递归写法,
+     * 验证二叉搜索树 递归写法,
+     *
      * @param root
      * @return
      */
@@ -2142,4 +2144,477 @@ public class LiCodeTest {
         dfsBST(root.right);
     }
 
+    /**
+     * 两数之和， 双指针 ,一个头指针，一个尾部指针，大了就尾部动，小了就头部动
+     *
+     * @param numbers
+     * @param target
+     * @return
+     */
+    public int[] twoSum3(int[] numbers, int target) {
+        int prev = 0;
+        int n = numbers.length;
+        int after = n - 1;
+        int[] res = new int[2];
+        while (prev < n && after > prev) {
+            int sum = numbers[after] + numbers[prev];
+            if (sum > target) {
+                after--;
+            } else if (sum < target) {
+                prev++;
+            } else {
+                res[0] = prev + 1;
+                res[1] = after + 1;
+                return res;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 盛水最多的容器，双指针解法，不是接雨水，别搞混了
+     *
+     * @param height
+     * @return
+     */
+    public int maxArea(int[] height) {
+        int prev = 0, after = height.length - 1, maxArea = 0;
+        while (after > prev) {
+            int area = (after - prev) * Math.min(height[prev], height[after]);
+            maxArea = Math.max(area, maxArea);
+            // 哪个边界小就挪哪个
+            if (height[prev] > height[after]) {
+                after--;
+            } else {
+                prev++;
+            }
+        }
+        return maxArea;
+    }
+
+    /**
+     * 三数之和，先排序然后用双指针，注意各个边界条件，和去重操作后依然需要挪动指针
+     *
+     * @param nums
+     * @return
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> res = new ArrayList<>();
+        int len = nums.length;
+        for (int i = 0; i < len; i++) {
+            if (nums[i] > 0)
+                break;// 已经排序过了如果出现大于0的情况，那么后续一定没有满足条件的
+            if (i > 0 && nums[i] == nums[i - 1])
+                continue; // 元素重复
+            int left = i + 1, right = len - 1;
+
+            while (left < right) {
+                int sum = nums[i] + nums[left] + nums[right];
+                if (sum == 0) {
+                    res.add(Arrays.asList(nums[i], nums[left], nums[right]));
+                    // 去重
+                    while (left < right && nums[left] == nums[left + 1]) {
+                        left++;
+                    }
+                    while (left < right && nums[right] == nums[right - 1]) {
+                        right--;
+                    }
+                    // 正常同时挪动指针
+                    left++;
+                    right--;
+                } else if (sum > 0) {
+                    right--;
+                } else {
+                    left++;
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 原区间本来就是有序无交集的子区间组成的，所以无需用合并的方法去做，只需要把插入区间左侧，右侧，以及合并的交集合成一个新的区间即可。
+     * 最好简单画个图，不然还是下标边界还是蛮抽象的
+     *
+     * @param intervals
+     * @param newInterval
+     * @return
+     */
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        List<int[]> merged = new ArrayList<>();
+        int i = 0, n = intervals.length;
+        int left = newInterval[0];
+        int right = newInterval[1];
+        // intervals[i]的右边区间比 left小，说明他们无交集且在newInterval左侧
+        while (i < n && left > intervals[i][1]) {
+            merged.add(intervals[i]);
+            i++;
+        }
+        // 重合区间就合并，左边界取最小，右边边界取最大
+        while (i < n && right >= intervals[i][0]) {
+            left = Math.min(left, intervals[i][0]);
+            right = Math.max(right, intervals[i][1]);
+            i++;
+        }
+        // 把合并区间加入结果
+        merged.add(new int[]{left, right});
+        // 剩下的交集之外的部分直接载入结果
+        while (i < n) {
+            merged.add(intervals[i]);
+            i++;
+        }
+        return merged.toArray(new int[merged.size()][]);
+    }
+
+    /**
+     * 用最少数量的箭引爆气球
+     *
+     * @param points
+     * @return
+     */
+    public int findMinArrowShots(int[][] points) {
+        // 先按右边界进行排序
+        Arrays.sort(points, Comparator.comparingInt(a -> a[1]));
+        int counts = 1;
+        int lastEnd = points[0][1];
+        for (int[] point : points) {
+            // 没有交集。必须要一只箭
+            if (lastEnd < point[0]) {
+                lastEnd = point[1];
+                counts++;
+            }
+        }
+        return counts;
+    }
+
+    /**
+     * 最长连续序列，  set去重，然后从非序列第一个数的数开始枚举序列长度
+     *
+     * @param nums
+     * @return
+     */
+    public int longestConsecutive(int[] nums) {
+        int maxLen = 0;
+        Set<Integer> set = new HashSet<>();
+        for (int number : nums) {
+            set.add(number);
+        }
+        for (int number : set) {
+            // 判断此数是不是连续序列的第一个数，是才进入循环，就减少了枚举次数
+            if (!set.contains(number - 1)) {
+                int currentNum = number;
+                int currentLen = 1;
+                while (set.contains(currentNum + 1)) {
+                    currentNum++;
+                    currentLen++;
+                }
+                maxLen = Math.max(maxLen, currentLen);
+            }
+        }
+
+        return maxLen;
+    }
+
+    /**
+     * 字母异位词分组  排序然后存入hashmap中，当异位词排序后的字符串一定是一样的，
+     *
+     * @param strs
+     * @return
+     */
+    public List<List<String>> groupAnagrams(String[] strs) {
+        if (strs.length == 0) {
+            return new ArrayList<>();
+        }
+        Map<String, List<String>> strMap = new HashMap<>();
+        for (String str : strs) {
+            char[] charArr = str.toCharArray();
+            Arrays.sort(charArr);
+            String key = new String(charArr);
+            if (strMap.get(key) == null) {
+                strMap.put(key, new ArrayList<>(Collections.singleton(str)));
+            } else {
+                strMap.get(key).add(str);
+            }
+        }
+
+        return new ArrayList<>(strMap.values());
+    }
+
+
+    /**
+     * 长度最小的子数组 滑动窗口， start和end从0开始，如果total小于target则移动end，
+     * 如果total大于target就移动start，记得结果加一 因为下标计算 出来的是下标之差，不是窗口长度
+     *
+     * @param target
+     * @param nums
+     * @return
+     */
+    public int minSubArrayLen(int target, int[] nums) {
+        int start = 0, end = 0, total = 0;
+        int ans = Integer.MAX_VALUE;
+        int n = nums.length;
+
+        while (end < n) {
+            total += nums[end];
+            while (total >= target) {
+                ans = Math.min(ans, end - start + 1);
+                total -= nums[start];
+                start++;
+            }
+            end++;
+        }
+        // 避免没找到结果输出个最大整数
+        return (ans == Integer.MAX_VALUE) ? 0 : ans;
+    }
+
+
+    /**
+     * 长度最小的子数组 前缀和 加二分查找法
+     *
+     * @param target
+     * @param nums
+     * @return
+     */
+    public static int minSubArrayLen2(int target, int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int ans = Integer.MAX_VALUE;
+        int[] sums = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+        for (int i = 1; i <= n; i++) {
+            int total = target + sums[i - 1];
+            int bound = Arrays.binarySearch(sums, total);
+            if (bound < 0) {
+                bound = -bound - 1;
+            }
+            if (bound <= n) {
+                ans = Math.min(ans, bound - (i - 1));
+            }
+        }
+        return (ans == Integer.MAX_VALUE) ? 0 : ans;
+    }
+
+    public int minSubArrayLen3(int target, int[] nums) {
+        int n = nums.length;
+        int ans = n + 1, sum = 0, left = 0;
+        for (int right = 0; right < n; right++) {
+            sum += nums[right];
+            // 如果减去左边界都比target大，那么就缩减左边界，尽量保证子数组长度最小
+            while (sum - nums[left] >= target) {
+                sum -= nums[left];
+                left++;
+            }
+            if (sum >= target) {
+                ans = Math.min(ans, right - left + 1);
+            }
+        }
+        return ans <= n ? ans : 0;
+    }
+
+
+    /**
+     * 无重复字符的最长子串 ,滑动窗口，
+     * 滑动窗口固定解法，左右指针：先移动右指针，到达边界点，记录，然后挪动左指针，然后继续挪动右指针，用左右边界移动去框定一段合法范围出来
+     * <p>
+     * 滑动窗口是有公式解法的 ：
+     * // 1. 定义窗口边界
+     * int left = 0;
+     * // 2. 定义结果
+     * int res = ...;
+     * // 3. 定义窗口内部状态（计数、集合、和等）
+     * ...
+     * <p>
+     * // 4. 固定外层：右指针一直往前走
+     * for (int right = 0; right < n; right++) {
+     * <p>
+     * // 把当前字符加入窗口
+     * 窗口状态.add(s[right]);
+     * <p>
+     * // 5. 固定内层：当窗口**不合法**时，移动左指针
+     * while (窗口不合法) {
+     * 窗口状态.remove(s[left]);
+     * left++;
+     * }
+     * <p>
+     * // 6. 此时窗口一定合法，更新结果
+     * res = max/min(res, right - left + 1);
+     * }
+     * <p>
+     * return res;
+     *
+     * @param s
+     * @return
+     */
+    public static int lengthOfLongestSubstring(String s) {
+        int res = 0;
+        // 预防空指针
+        if (s == null) {
+            return res;
+        }
+        int left = 0, right = 0;
+        Set<Character> set = new HashSet<>();
+        // 保证数组下标不越界
+        while (left <= right && right < s.length()) {
+            // 不断右移指针，直到出现重复
+            if (set.add(s.charAt(right))) {
+                right++;
+                // 不用加一是因为已经挪动到合规字符串边界外了
+                res = Math.max(right - left, res);
+                continue;
+            }
+            // 有重复则移除左指针位置元素，然后挪动左边指针
+            set.remove(s.charAt(left));
+            left++;
+        }
+        return res;
+    }
+
+
+    /**
+     * 矩阵，有效的数独，记住记住这个原理就行了，主要难点就是 i/3和j/3这里是利用数学规律进行分组了，
+     * 0-2整除3等于0，3-5整除3等于1，6-9整除就是3，刚好0，1，3对应数组长度3，
+     * 然后再用index去表示每个位置的数字就行了，
+     * 一旦出现某个数字计数超过1那就是不合格，这只是判断数独，不是做数独
+     *
+     * @param board
+     * @return
+     */
+    public boolean isValidSudoku(char[][] board) {
+        int[][] rows = new int[9][9];
+        int[][] columns = new int[9][9];
+        int[][][] subBoxes = new int[3][3][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                char c = board[i][j];
+                if (c != '.') {
+                    // 这里是为了把字符简单转换为整型 ，2的ASCII码对应整数是50 ，0的ASCII码对应整数是48 ，50-48 刚好是2
+                    int index = c - '0' - 1;
+                    rows[i][index]++;
+                    columns[j][index]++;
+                    subBoxes[i / 3][j / 3][index]++;
+
+                    if (rows[i][index] > 1
+                            || columns[j][index] > 1
+                            || subBoxes[i / 3][j / 3][index] > 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 螺旋矩阵（模拟) ,从左到右，从上到下，从右到左，从下到上，一直循环直到某一位置越界，这里res可以直接用list
+     * 用数组是因为作者用的数组，我照抄的
+     *
+     * @param matrix
+     * @return
+     */
+    public List<Integer> spiralOrder(int[][] matrix) {
+        if (matrix.length == 0) {
+            return new ArrayList<>();
+        }
+        int index = 0;
+        // 初始化左，右，上，下的边界值
+        int left = 0, right = matrix[0].length - 1, top = 0, bottom = matrix.length - 1;
+        Integer[] res = new Integer[(right + 1) * (bottom + 1)];
+        while (true) {
+            for (int i = left; i <= right; i++) {
+                // 从左到右 列变行不变
+                res[index++] = matrix[top][i];
+            }
+
+            // 判断上边界是否越界，上边界不能超过下边界
+            if (++top > bottom) break;
+            for (int i = top; i <= bottom; i++) {
+                // 从上到下 行变列不变
+                res[index++] = matrix[i][right];
+            }
+
+            // 判断右边界是否越界，右边界不能小于左边界
+            if (--right < left) break;
+            for (int i = right; i >= left; i--) {
+                // 从右到左 列变行不变
+                res[index++] = matrix[bottom][i];
+            }
+
+            // 判断下边界是否越界，下边界不能超过上边界
+            if (--bottom < top) break;
+            for (int i = bottom; i >= top; i--) {
+                // 从下往上 行变列不变
+                res[index++] = matrix[i][left];
+            }
+
+            // 判断左边界是否大于右边界，
+            if (++left > right) break;
+        }
+        return Arrays.asList(res);
+    }
+
+
+    /**
+     * 旋转图像 ,旋转90°，行列互换。  matrix[row][col]，在旋转后，它的新位置为 matrix[col][n−row−1]。
+     * 我们不用一个个去推算位置，太容易错了，直接先再n/2处为分界上下翻转，在按对角线翻转就是90°翻转的效果：
+     * 暂存tmp=matrix[i][j]
+     * matrix[i][j]  ←  matrix[n−1−j][i]  ←  matrix[n−1−i][n−1−j]   ←  matrix[j][n−1−i]  ←  tm
+     * 这玩意你现场画图都容易搞错
+     */
+    public static void rotate(int[][] matrix) {
+        int n = matrix.length;
+        // 水平翻转 逐行逐列的一个个翻转，
+        for (int i = 0; i < n / 2; ++i) {
+            for (int j = 0; j < n; ++j) {
+                int temp = matrix[i][j];
+                matrix[i][j] = matrix[n - i - 1][j];
+                matrix[n - i - 1][j] = temp;
+            }
+        }
+        // 水平翻转 也可以直接逐行交换int[]效果是一样的
+        // for (int i = 0; i < n / 2; i++) {
+        //     int[] temp = matrix[i];
+        //     matrix[i] = matrix[n - i - 1];
+        //     matrix[n - i - 1] = temp;
+        // }
+
+        // 主对角线翻转,从左下角翻转，
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                int temp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = temp;
+            }
+        }
+        // 也可以从左上角翻转,效果是一样的
+        // for (int i = 0; i < n; i++) {
+        //     for (int j = i + 1; j < n; j++) {
+        //         int temp = matrix[i][j];
+        //         matrix[i][j] = matrix[j][i];
+        //         matrix[j][i] = temp;
+        //     }
+        // }
+    }
+
+    /**
+     * 这个方法不用记，太容易错了
+     *
+     * @param matrix
+     */
+    public void rotate2(int[][] matrix) {
+        int n = matrix.length;
+        for (int i = 0; i < n / 2; i++) {
+            for (int j = 0; j < (n + 1) / 2; j++) {
+                int tmp = matrix[i][j];
+                matrix[i][j] = matrix[n - 1 - j][i];
+                matrix[n - 1 - j][i] = matrix[n - 1 - i][n - 1 - j];
+                matrix[n - 1 - i][n - 1 - j] = matrix[j][n - 1 - i];
+                matrix[j][n - 1 - i] = tmp;
+            }
+        }
+    }
 }
