@@ -5,19 +5,10 @@ import java.util.*;
 public class LiCodeTest {
 
     public static void main(String[] args) {
-        ListNode head = new ListNode(1);
-        ListNode two = new ListNode(4);
-        head.next = two;
-        ListNode three = new ListNode(3);
-        two.next = three;
-        ListNode four = new ListNode(2);
-        three.next = four;
-        ListNode five = new ListNode(5, null);
-        four.next = five;
-        ListNode six = new ListNode(2, null);
-        five.next = six;
-
-        System.out.println(lengthOfLongestSubstring("dvdf"));
+        int[][] test = {{1, 1}, {1, 0}};
+        int[] hj = {1, 1, 1, 2, 2, 3};
+        gameOfLife(test);
+        System.out.println(removeDuplicatesT(hj));
     }
 
     /**
@@ -2617,4 +2608,447 @@ public class LiCodeTest {
             }
         }
     }
+
+
+    /**
+     * 矩阵归零 ， 用数组存是否有0 ，
+     *
+     * @param matrix
+     */
+    public void setZeroes(int[][] matrix) {
+        int n = matrix.length, m = matrix[0].length;
+        boolean[] rowZeroFlag = new boolean[n];
+        boolean[] colZeroFlag = new boolean[m];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (matrix[i][j] == 0) {
+                    rowZeroFlag[i] = colZeroFlag[j] = true;
+                }
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (rowZeroFlag[i] || colZeroFlag[j]) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 矩阵归零，用第一行，第一列来存是否有0 ，比用数组更节省空间，只用到常量级别的空间复杂度
+     *
+     * @param matrix
+     */
+    public void setZeroes2(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        boolean firstRowZero = false, firstColZero = false;
+        // 判断第一行是否有0
+        for (int x : matrix[0]) {
+            if (x == 0) {
+                firstRowZero = true;
+                break;
+            }
+        }
+        // 判断第一列是否有0
+        for (int i = 0; i < m; i++) {
+            if (matrix[i][0] == 0) {
+                firstColZero = true;
+                break;
+            }
+
+        }
+        // 把是否有0记录在第一行和第一列
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][j] == 0) {
+                    matrix[i][0] = matrix[0][j] = 0;
+                }
+            }
+        }
+        // 遍历矩阵，根据第一行第一列是否为0把矩阵归零
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        // 第一行有0则把第一行归0
+        if (firstRowZero) {
+            for (int i = 0; i < n; i++) {
+                matrix[0][i] = 0;
+            }
+        }
+        // 第一列有0则把第一列归0
+        if (firstColZero) {
+            for (int i = 0; i < m; i++) {
+                matrix[i][0] = 0;
+            }
+        }
+    }
+
+
+    /**
+     * 矩阵归零，用一个变量，加matrix[0][0]来分别存储第一行，第一列是否有0，这种写法，第一列置零一定要在第一行置零之前、
+     * 不然存储的信息就被覆盖了
+     *
+     * @param matrix
+     */
+    public void setZeroes3(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        boolean firstRowZero = false;
+        // 判断第一行是否有0，假如只使用一个变量来标记呢
+        for (int x : matrix[0]) {
+            if (x == 0) {
+                firstRowZero = true;
+                break;
+            }
+        }
+        // 把是否有0记录在第一行和第一列，我们从0开始遍历列，那么如果列有0，matrix[0][0]一定是0
+        for (int i = 1; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == 0) {
+                    matrix[i][0] = matrix[0][j] = 0;
+                }
+            }
+        }
+        // 遍历矩阵，根据第一行第一列是否为0把矩阵归零
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        // 第一列有0则把第一列归0，因为matrix[0][0]处包含了信息，所以得先利用这个信息把第一列给修改了】
+        // 不然等第一行置为0之后，就会影响，第一列的结果
+        if (matrix[0][0] == 0) {
+            for (int i = 1; i < m; i++) {
+                matrix[i][0] = 0;
+            }
+        }
+        // 第一行有0则把第一行归0
+        if (firstRowZero) {
+            for (int i = 0; i < n; i++) {
+                matrix[0][i] = 0;
+            }
+        }
+
+    }
+
+
+    // 我们利用额外的状态的标记，这样就可以原地修改，无需复制矩阵、
+    // 复活的
+    private static final int REVIVE = 2;
+    // 过去是活的现在是死的
+    private static final int KILLED = -1;
+
+    /**
+     * 生命游戏，利用两个新的复合状态，来替代复制board的操作，使得状态可以在原地更新也不影响条件判断
+     *
+     * @param board
+     */
+    public static void gameOfLife(int[][] board) {
+        // 用于构建细胞周围八个位置的坐标
+        int[] neighbor = {0, -1, 1};
+        int rows = board.length;
+        int cols = board[0].length;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                // 记录八格内的活细胞数量
+                int liveCells = 0;
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        // 都为0的时候，是本体，无需统计
+                        if (!(neighbor[i] == 0 && neighbor[j] == 0)) {
+                            int neighborRow = row + neighbor[i];
+                            int neighborCol = col + neighbor[j];
+                            // 防止越界，等于1是一直活着的，等于-1是活着被杀的，在状态更新前是活的
+                            if (neighborRow >= 0 && neighborRow < rows
+                                    && neighborCol >= 0 && neighborCol < cols) {
+                                if (board[neighborRow][neighborCol] == 1 || board[neighborRow][neighborCol] == KILLED)
+                                    liveCells++;
+                            }
+                        }
+                    }
+                }
+
+                // 根据条件，对board[row][col] 进行不同的赋值
+                // 活细胞周围活细胞小于2大于3，则杀死细胞，赋予新状态-1，此时死细胞则保持原状态0
+                if ((liveCells < 2 || liveCells > 3) && (board[row][col] == 1))
+                    board[row][col] = KILLED;
+                // 活细胞周围有两个或三个活细胞，细胞存活,保持原状态 1
+                // 死细胞周围刚好有三个活细胞，细胞复活，赋予新状态 2
+                if (liveCells == 3 && board[row][col] == 0)
+                    board[row][col] = REVIVE;
+            }
+        }
+        // 遍历矩阵把状态置为0，1
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if (board[row][col] > 0) {
+                    board[row][col] = 1;
+                } else {
+                    board[row][col] = 0;
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 移除有序数组的重复元素Ⅱ   给你一个有序数组 nums ，请你 原地 删除重复出现的元素，使得出现次数超过两次的元素只出现两次 ，返回删除后数组的新长度。
+     * 快慢指针
+     *
+     * @param nums
+     * @return
+     */
+    public static int removeDuplicatesT(int[] nums) {
+        int n = nums.length;
+        // 双指针
+        int fast = 2, slow = 2;
+        while (fast < n) {
+            if (nums[slow - 2] != nums[fast]) {
+                nums[slow++] = nums[fast];
+            }
+            fast++;
+        }
+        return slow;
+    }
+
+    /**
+     * 轮转数组：将数组中的元素向右轮转 k 个位置，其中 k 是非负数，有三种写法，这里只介绍两种，
+     * 第一个：就是利用额外的数组来存，因为转动后的位置是可以算出来的: (k+i)%n;然后再复制两个数组就行了
+     * <p>
+     * 第二个：就是示例代码，先把数组整个翻转，再把前半部分翻转，后半部分也翻转即可，因为我们是可以算出来要把哪个位置的
+     * 值作为数组的第一个值的，比如k=2 ,{1，2，3，4，5，6}，就应该是 n-k = 6-2=4,也就是下标为4的元素5为新数组的头元素，
+     * 我们把数组翻转 得到： {6，5，4，3，2，1}，
+     * 此时把下标为（0到（k%n-1）=1） 的前半部分翻转得到 {5，6，4，3，2，1}，
+     * 再把下标为(k%n=2) 到(n-1 =5) 的后半部分翻转，就得到了目标结果 {5,6,1,2,3,4}
+     * <p>
+     * 第三个：我原本想用链表的方式，先把头尾相连接，现成环形链表，再从计算出的位置断开，就实现的链表的翻转，但是数组上这样操作太麻烦了
+     * 直接舍弃
+     *
+     * @param nums
+     * @param k
+     */
+    public void rotate(int[] nums, int k) {
+        int n = nums.length;
+        // 先全翻转
+        reverse(nums, 0, n - 1);
+        // 再翻转 0到k%n-1
+        reverse(nums, 0, k % n - 1);
+        // 最后翻转后半部分
+        reverse(nums, k % n, n - 1);
+    }
+
+    private void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            int temp = nums[start];
+            // 头尾指针互相靠近
+            nums[start++] = nums[end];
+            nums[end--] = temp;
+        }
+    }
+
+
+    /**
+     * 买卖股票的最佳时机 II ，在每一天，你可以决定是否购买和/或出售股票。你在任何时候 最多 只能持有 一股 股票。然而，你可以在 同一天 多次买卖该股票，但要确保你持有的股票不超过一股。
+     * 返回 你能获得的 最大 利润 。
+     * 贪心算法，在连续上涨期间，第一天买最后一天卖的利润最大，就等价于每天都在买和卖， 而下降期间，不买就是最赚的，始终不亏。
+     *
+     * @param prices
+     * @return
+     */
+    public int maxProfit3(int[] prices) {
+        int n = prices.length;
+        int index = 1, res = 0;
+        while (index < n) {
+            // 只要上涨就无脑买入卖出，下降直接不理
+            res += Math.max(0, prices[index] - prices[index - 1]);
+            index++;
+        }
+        return res;
+    }
+
+    /**
+     * 买卖股票的最佳时机 II  动态规划
+     *
+     * @param prices
+     * @return
+     */
+    public int maxProfit4(int[] prices) {
+        int len = prices.length;
+        int[][] dp = new int[len][2];
+        // dp[i][0]表示没有股票的最大利润,0天没有股票利润就是0
+        dp[0][0] = 0;
+        // dp[i][1]表示持有股票的最大利润，0天持有股票利润就是-prices[0]，花钱买了股票
+        dp[0][1] = -prices[0];
+
+        for (int i = 1; i < len; i++) {
+            // 昨天有今天没有，就是今天卖出去了，昨天持有股票的利润基础上加 prices[i]
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            // 昨天没有，今天有，就是买入了,昨天没有股票的利润基础上减 prices[i]
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+        }
+        // 最后一天持有股票明显是亏得，所以返回没有股票时的利润就是最大的
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 岛屿的数量，给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+     * 岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+     * 此外，你可以假设该网格的四条边均被水包围。
+     * <p>
+     * 深度优先遍历，所有岛屿类的题都可以用这种深度优先遍历的方法去做，所以这个写法一定要掌握！
+     *
+     * @param grid
+     * @return
+     */
+    public int numIslands(char[][] grid) {
+        // 统计结果
+        int count = 0;
+        if (grid == null || grid.length == 0) return count;
+
+        for (int row = 0; row < grid.length; row++) {
+            for (int col = 0; col < grid[0].length; col++) {
+                // 对遇到的陆地进行岛屿判断、注意题目是字符数组
+                if (grid[row][col] == '1') {
+                    count++;
+                    // 深度优先
+                    islandDfs(grid, row, col);
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 岛屿的数量深度优先遍历
+     *
+     * @param grid
+     * @param row
+     * @param col
+     */
+    private void islandDfs(char[][] grid, int row, int col) {
+        // 边界条件,不能越界，并且不能为已访问节点和海洋节点
+        if (row < 0 || col < 0
+                || row >= grid.length || col >= grid[0].length
+                || grid[row][col] == '2' || grid[row][col] == '0') {
+            return;
+        }
+        // 标记以访问节点
+        grid[row][col] = '2';
+        // 从上下左右递归查找是否为岛屿
+        islandDfs(grid, row, col + 1);
+        islandDfs(grid, row + 1, col);
+        islandDfs(grid, row - 1, col);
+        islandDfs(grid, row, col - 1);
+    }
+
+    /**
+     * 岛屿的数量，给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+     * 岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+     * 此外，你可以假设该网格的四条边均被水包围。
+     * <p>
+     * 广度优先遍历，就和二叉树的广度优先，深度优先遍历一样，都是熟练要掌握的，利用队列来进行处理，
+     *
+     * @param grid
+     * @return
+     */
+    public int numIslands2(char[][] grid) {
+        // 统计结果
+        int count = 0;
+        if (grid == null || grid.length == 0) return count;
+
+        for (int row = 0; row < grid.length; row++) {
+            for (int col = 0; col < grid[0].length; col++) {
+                // 对遇到的陆地进行岛屿判断、注意题目是字符数组
+                if (grid[row][col] == '1') {
+                    count++;
+                    // 广度优先
+                    islandBfs(grid, row, col);
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 岛屿的数量，广度优先遍历
+     *
+     * @param grid
+     * @param row
+     * @param col
+     */
+    private void islandBfs(char[][] grid, int row, int col) {
+        // 这里用一个队列来存节点上下左右的节点，然后依据这些节点继续他们的上下左右找，层层往外找
+        Queue<int[]> queue = new LinkedList<>();
+        // 把初始节点加进去
+        queue.offer(new int[]{row, col});
+
+        while (!queue.isEmpty()) {
+            // 取出第一个节点
+            int[] cur = queue.poll();
+            int tmpRow = cur[0];
+            int tmpCol = cur[1];
+
+            //边界条件，不能越界，也不能为海鲜节点或已访问节点
+            if (tmpRow >= 0 && tmpCol >= 0
+                    && tmpRow < grid.length && tmpCol < grid[0].length
+                    && grid[tmpRow][tmpCol] == '1') {
+                // 把此节点设为已统计状态
+                grid[tmpRow][tmpCol] = '2';
+                queue.offer(new int[]{tmpRow + 1, tmpCol});
+                queue.offer(new int[]{tmpRow, tmpCol + 1});
+                queue.offer(new int[]{tmpRow - 1, tmpCol});
+                queue.offer(new int[]{tmpRow, tmpCol - 1});
+            }
+
+        }
+    }
+
+    /**
+     * 使用并查集来实现，并查集的parent只支持一维数组，所以需要用 行数*行高+列数，把二维坐标转换为连续的一维数组。
+     *
+     * @param grid
+     * @return
+     */
+    public int numIslands3(char[][] grid) {
+        if (grid == null || grid.length == 0) {
+            return 0;
+        }
+        int rows = grid.length;
+        int cols = grid[0].length;
+        UnionFind2 uf = new UnionFind2(grid);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                // 遇到陆地把所有相邻陆地连接起来
+                if (grid[r][c] == '1') {
+                    // 先把访问过的做个标记
+                    grid[r][c] = '2';
+                    if (r + 1 < rows && grid[r + 1][c] == '1') {
+                        uf.union(r * cols + c, (r + 1) * cols + c);
+                    }
+                    if (r - 1 >= 0 && grid[r - 1][c] == '1') {
+                        uf.union(r * cols + c, (r - 1) * cols + c);
+                    }
+                    if (c + 1 < cols && grid[r][c + 1] == '1') {
+                        uf.union(r * cols + c, r * cols + c + 1);
+                    }
+                    if (c - 1 >= 0 && grid[r][c - 1] == '1') {
+                        uf.union(r * cols + c, r * cols + c - 1);
+                    }
+                }
+            }
+        }
+        return uf.getCount();
+    }
+
+
 }
